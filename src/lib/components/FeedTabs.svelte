@@ -12,7 +12,7 @@
 
   const tabs: { key: FeedMode; label: string }[] = [
     { key: 'follow', label: 'Following' },
-    { key: 'global', label: 'Global' },
+    { key: 'global', label: 'Safe Global' },
     { key: 'custom', label: 'Custom' }
   ];
 
@@ -49,7 +49,7 @@
               <SlidersHorizontal size={18} />
             </button>
           </div>
-          <button class:active={$feedMode === 'global'} {disabled} on:click={() => select('global')}>Global</button>
+          <button class:active={$feedMode === 'global'} {disabled} on:click={() => select('global')}>Safe Global</button>
           <div class="algorithm-edit-row">
             <button class:active={$feedMode === 'custom'} {disabled} on:click={() => select('custom')}>Custom</button>
             <button class="icon-button custom-feed-edit" disabled={disabled || $feedMode !== 'custom'} on:click={() => openEditor('custom')} aria-label="Edit custom feed">
