@@ -22,7 +22,7 @@ import {
   removeCachedOwnAction,
   type CachedOwnAction
 } from '$lib/nostr/cache';
-import { defaultCustomFeedSettings, defaultGlobalFeedAuthors, defaultGuestNip05, defaultProfileRelays, defaultRelays, globalFeedCuratorPubkey, globalFeedHashtags, keywordsForInterests } from '$lib/nostr/config';
+import { defaultCustomFeedSettings, defaultGlobalFeedAuthors, defaultGlobalFeedRelays, defaultGuestNip05, defaultProfileRelays, defaultRelays, globalFeedCuratorPubkey, globalFeedHashtags, keywordsForInterests } from '$lib/nostr/config';
 import { appPath } from '$lib/paths';
 import { markRelaysOffline, markRelaysOnline, syncRelayStatus } from '$lib/stores/relayStatus';
 import { insertTimelineItems, timelineCursor, uniqueFreshItems } from '$lib/timeline/window';
@@ -412,7 +412,7 @@ export async function refreshFeed(mode = currentMode, options: { replaceVisible?
     if (fetchMode === 'custom') await refreshFriendsOfFriendsAuthors();
     const newestTimestamp = options.reset ? undefined : timelineCursor([...visibleEvents, ...getStoreSnapshot(pendingNewerEvents)], 'newest');
     const nextEvents = filterMutedEvents(
-      await fetchFeed(fetchMode, currentRelays, currentFollows, effectiveFeedSettings(fetchMode), {
+      await fetchFeed(fetchMode, feedRelaysForMode(fetchMode), currentFollows, effectiveFeedSettings(fetchMode), {
         limit: initialFeedLimit,
         since: newestTimestamp ? newestTimestamp + 1 : undefined,
         hashtag: currentHashtag,
@@ -577,7 +577,7 @@ export async function loadNewerFeed() {
   loadingNewerFeed.set(true);
   try {
     if (fetchMode === 'custom') await refreshFriendsOfFriendsAuthors();
-    const nextEvents = filterMutedEvents(await fetchFeed(fetchMode, currentRelays, currentFollows, effectiveFeedSettings(fetchMode), {
+    const nextEvents = filterMutedEvents(await fetchFeed(fetchMode, feedRelaysForMode(fetchMode), currentFollows, effectiveFeedSettings(fetchMode), {
       limit: initialFeedLimit,
       since: newestTimestamp + 1,
       hashtag: currentHashtag,
@@ -866,7 +866,7 @@ async function restartLiveFeed(mode = currentMode, newestTimestamp?: number) {
 
   const sub = await subscribeFeed(
     mode,
-    currentRelays,
+    feedRelaysForMode(mode),
     currentFollows,
     effectiveFeedSettings(mode),
     { since: newestTimestamp ? newestTimestamp + 1 : Math.floor(Date.now() / 1000), hashtag: currentHashtag, globalAuthors: currentGlobalFeedAuthors, customFriendsOfFriends: currentFriendsOfFriends },
@@ -954,7 +954,7 @@ async function fetchOlderFeedPage(fetchMode: FeedMode, target = olderFetchTarget
   for (let attempt = 0; attempt < olderFetchMaxAttempts && collected.length < target; attempt += 1) {
     const olderThan = cursor ? cursor - 1 : undefined;
     const nextEvents = filterMutedEvents(
-      await fetchFeed(fetchMode, currentRelays, currentFollows, effectiveFeedSettings(fetchMode), {
+      await fetchFeed(fetchMode, feedRelaysForMode(fetchMode), currentFollows, effectiveFeedSettings(fetchMode), {
         limit: olderFetchBatchLimit,
         since: olderFeedPageCutoff(cursor, fetchMode),
         until: olderThan,
@@ -2790,6 +2790,10 @@ function emptyStats(): EventStats {
 function effectiveFeedSettings(mode: FeedMode): CustomFeedSettings {
   if (currentSessionValue && (mode === 'global' || mode === 'custom')) return currentSettings;
   return { ...currentSettings, interests: [] };
+}
+
+function feedRelaysForMode(mode: FeedMode) {
+  return mode === 'global' ? defaultGlobalFeedRelays : currentRelays;
 }
 
 function mergeRelayHints(urls: string[], startingScore = 76) {

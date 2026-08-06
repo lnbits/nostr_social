@@ -9,6 +9,12 @@ export const defaultRelays: RelayState[] = [
   { url: 'wss://relay.snort.social', enabled: true, read: true, write: true, score: 90 }
 ];
 
+export const defaultGlobalFeedRelays: RelayState[] = [
+  { url: 'wss://theforest.nostr1.com', enabled: true, read: true, write: true, score: 100 },
+  { url: 'wss://pyramid.fiatjaf.com', enabled: true, read: true, write: true, score: 98 },
+  { url: 'wss://nostr.wine', enabled: true, read: true, write: true, score: 96 }
+];
+
 export const defaultProfileRelays: RelayState[] = [
   { url: 'wss://nos.lol', enabled: true, read: true, write: true, score: 92 },
   { url: 'wss://relay.damus.io', enabled: true, read: true, write: true, score: 94 },
